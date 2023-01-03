@@ -172,7 +172,7 @@ public final class TradeConfig {
 
             return recipe;
         } else {
-            this.plugin.getLogger().log(Level.WARNING, String.format("Failed to read trade: '%s', missing/invalid result item", prefix));
+            this.plugin.getLogger().log(Level.WARNING, String.format("Failed to read trade: '%s/%s', missing/invalid result item", configName, prefix));
         }
         return null;
     }
