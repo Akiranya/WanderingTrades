@@ -1,8 +1,12 @@
 package xyz.jpenilla.wanderingtrades.config;
 
+import co.mcsky.mewcore.item.PluginItem;
+import co.mcsky.mewcore.item.PluginItemRegistry;
 import io.papermc.lib.PaperLib;
+
 import java.util.List;
 import java.util.Locale;
+
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
@@ -18,6 +22,9 @@ import xyz.jpenilla.wanderingtrades.util.Logging;
 public final class ItemStackSerialization {
     private static final List<String> COMMENT = List.of(
         "The following value was serialized from an in-game item and is not meant to be human-readable or editable. As long as it is present other options for this item will be ignored."
+    );
+    private static final List<String> COMMENT1 = List.of(
+      "The following value takes the highest priority when loading. The only valid option with it is \"amount\"."
     );
 
     private ItemStackSerialization() {
@@ -35,9 +42,21 @@ public final class ItemStackSerialization {
 
         final String paperPath = path + ".itemStackAsBytes";
         final String bukkitPath = path + ".itemStack";
+        final String pluginPath = path + ".itemStackFromPlugin";
         final String selectedPath = PaperLib.isPaper() ? paperPath : bukkitPath;
-        final Object value = PaperLib.isPaper() ? itemStack.serializeAsBytes() : itemStack.serialize();
+        final Object value = PaperLib.isPaper() ? Base64Util.encode(itemStack.serializeAsBytes()) : itemStack.serialize();
         config.set(selectedPath, value);
+
+        // Set plugin item reference if there is any
+        final String itemReference = PluginItemRegistry.toReference(itemStack);
+        if (itemReference != null) {
+            // Set the "amount" entry for Plugin Item as the item reference doesn't contain the amount information
+            config.set(path + ".amount", itemStack.getAmount());
+            config.set(pluginPath, itemReference);
+        } else {
+            // Clear the entry if it's not an item from 3rd plugins
+            config.set(pluginPath, null);
+        }
 
         // Remove old bukkit value if re-saving as paper value or changed while on paper
         if (PaperLib.isPaper() && config.get(bukkitPath, null) != null) {
@@ -47,15 +66,29 @@ public final class ItemStackSerialization {
         try {
             config.getClass().getMethod("getComments", String.class);
             config.setComments(selectedPath, COMMENT);
+            config.setComments(pluginPath, COMMENT1);
         } catch (final NoSuchMethodException ignore) {
         }
     }
 
     public static @Nullable ItemStack read(final FileConfiguration config, final String key) {
+        if (config.contains(key + ".itemStackFromPlugin", true)) {
+            String reference = config.getString(key + ".itemStackFromPlugin");
+            PluginItem<?> pluginItem = PluginItemRegistry.fromReferenceNullable(reference);
+            if (pluginItem != null) {
+                ItemStack stack = pluginItem.createItemStack();
+                if (stack != null) {
+                    final int amount = config.getInt(key + ".amount", 1);
+                    stack.setAmount(amount);
+                    return stack;
+                }
+            }
+        }
+
         if (PaperLib.isPaper()) {
-            final byte[] stack = (byte[]) config.get(key + ".itemStackAsBytes");
+            final String stack = config.getString(key + ".itemStackAsBytes");
             if (stack != null) {
-                return ItemStack.deserializeBytes(stack);
+                return ItemStack.deserializeBytes(Base64Util.decode(stack));
             }
         }
 

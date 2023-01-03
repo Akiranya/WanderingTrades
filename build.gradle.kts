@@ -31,6 +31,11 @@ repositories {
     maven("https://jitpack.io") {
         content { includeGroup("com.github.MilkBowl") }
     }
+    mavenLocal {
+        content {
+            includeGroup("co.mcsky")
+        }
+    }
 }
 
 dependencies {
@@ -55,6 +60,9 @@ dependencies {
         exclude("org.bukkit")
     }
     compileOnly("com.sk89q.worldedit", "worldedit-bukkit", "7.2.13")
+    compileOnly("co.mcsky", "MewCore", "5.10") {
+        isTransitive = false
+    }
 }
 
 indra {
@@ -67,6 +75,7 @@ bukkit {
     apiVersion = "1.16"
     website = "https://github.com/jpenilla/WanderingTrades"
     authors = listOf("jmp")
+    depend = listOf("MewCore")
     softDepend = listOf("WorldEdit", "WorldGuard", "Vault", "PlaceholderAPI", "ViaVersion")
     permissions {
         register("wanderingtrades.trader-spawn-notifications") {
@@ -113,6 +122,14 @@ tasks {
                     result = result.replace("\${$key}", value.toString())
                 }
                 result
+            }
+        }
+    }
+    register("deployToServer") {
+        dependsOn(build)
+        doLast {
+            exec {
+                commandLine("rsync", shadowJar.get().archiveFile.get().asFile.absoluteFile, "dev:data/dev/jar")
             }
         }
     }
