@@ -24,7 +24,7 @@ public final class ItemStackSerialization {
         "The following value was serialized from an in-game item and is not meant to be human-readable or editable. As long as it is present other options for this item will be ignored."
     );
     private static final List<String> COMMENT1 = List.of(
-      "The following value takes the highest priority when loading. The only valid option with it is \"amount\"."
+        "The following value takes the highest priority when loading. The only valid option with it is \"amount\"."
     );
 
     private ItemStackSerialization() {
@@ -73,15 +73,16 @@ public final class ItemStackSerialization {
 
     public static @Nullable ItemStack read(final FileConfiguration config, final String key) {
         if (config.contains(key + ".itemStackFromPlugin", true)) {
-            String reference = config.getString(key + ".itemStackFromPlugin");
-            PluginItem<?> pluginItem = PluginItemRegistry.fromReferenceNullable(reference);
-            if (pluginItem != null) {
-                ItemStack stack = pluginItem.createItemStack();
-                if (stack != null) {
-                    final int amount = config.getInt(key + ".amount", 1);
-                    stack.setAmount(amount);
-                    return stack;
-                }
+            final String reference = config.getString(key + ".itemStackFromPlugin");
+            final ItemStack stack;
+            final PluginItem<?> pluginItem;
+            if (
+                (pluginItem = PluginItemRegistry.fromReferenceNullable(reference)) != null &&
+                (stack = pluginItem.createItemStack()) != null
+            ) {
+                final int amount = config.getInt(key + ".amount", 1);
+                stack.setAmount(amount);
+                return stack;
             }
         }
 
