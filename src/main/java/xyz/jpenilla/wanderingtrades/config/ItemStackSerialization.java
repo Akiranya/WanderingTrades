@@ -1,7 +1,7 @@
 package xyz.jpenilla.wanderingtrades.config;
 
-import co.mcsky.mewcore.item.PluginItem;
-import co.mcsky.mewcore.item.PluginItemRegistry;
+import cc.mewcraft.mewcore.item.api.PluginItem;
+import cc.mewcraft.mewcore.item.api.PluginItemRegistry;
 import io.papermc.lib.PaperLib;
 
 import java.util.List;
@@ -48,7 +48,7 @@ public final class ItemStackSerialization {
         config.set(selectedPath, value);
 
         // Set plugin item reference if there is any
-        final String itemReference = PluginItemRegistry.toReference(itemStack);
+        final String itemReference = PluginItemRegistry.get().toReference(itemStack);
         if (itemReference != null) {
             // Set the "amount" entry for Plugin Item as the item reference doesn't contain the amount information
             config.set(path + ".amount", itemStack.getAmount());
@@ -77,7 +77,7 @@ public final class ItemStackSerialization {
             final ItemStack stack;
             final PluginItem<?> pluginItem;
             if (
-                (pluginItem = PluginItemRegistry.fromReferenceNullable(reference)) != null &&
+                (pluginItem = PluginItemRegistry.get().fromReferenceNullable(reference)) != null &&
                 (stack = pluginItem.createItemStack()) != null
             ) {
                 final int amount = config.getInt(key + ".amount", 1);

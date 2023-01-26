@@ -33,7 +33,7 @@ repositories {
     }
     mavenLocal {
         content {
-            includeGroup("co.mcsky")
+            includeGroup("cc.mewcraft")
         }
     }
 }
@@ -60,9 +60,7 @@ dependencies {
         exclude("org.bukkit")
     }
     compileOnly("com.sk89q.worldedit", "worldedit-bukkit", "7.2.13")
-    compileOnly("co.mcsky", "MewCore", "5.10") {
-        isTransitive = false
-    }
+    compileOnly("cc.mewcraft", "MewCore", "5.11")
 }
 
 indra {
