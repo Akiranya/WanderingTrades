@@ -48,7 +48,7 @@ public final class ItemStackSerialization {
         config.set(selectedPath, value);
 
         // Set plugin item reference if there is any
-        final String itemReference = PluginItemRegistry.get().toReference(itemStack);
+        final String itemReference = PluginItemRegistry.get().asReference(itemStack);
         if (itemReference != null) {
             // Set the "amount" entry for Plugin Item as the item reference doesn't contain the amount information
             config.set(path + ".amount", itemStack.getAmount());
