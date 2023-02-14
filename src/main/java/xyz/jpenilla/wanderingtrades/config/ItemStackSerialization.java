@@ -31,7 +31,7 @@ public final class ItemStackSerialization {
     }
 
     public static void writeOrRemove(final FileConfiguration config, final String path, final @Nullable ItemStack itemStack) {
-        if (itemStack == null) {
+        if (itemStack == null || itemStack.getType().isAir()) {
             config.set(path, null);
             return;
         }
@@ -98,7 +98,7 @@ public final class ItemStackSerialization {
             return ItemStack.deserialize(configSection.getValues(true));
         }
 
-        final String materialString = config.getString(key + ".material");
+        final String materialString = config.getString(key + ".material", null);
         if (materialString == null) {
             // Assume no item (ie ingredient 2)
             return null;
